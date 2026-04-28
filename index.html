@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>장단 느낌 나눠보기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #f0f0f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+  .app { display: flex; flex-direction: column; height: 680px; width: 100%; max-width: 480px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+  .tab-bar { display: flex; background: #f7f7f9; border-bottom: 1px solid #e5e5ea; }
+  .tab { flex: 1; padding: 14px 8px; text-align: center; cursor: pointer; font-size: 13px; color: #888; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active-sema { color: #534AB7; border-bottom-color: #7F77DD; font-weight: 600; background: #fff; }
+  .tab.active-2bak { color: #0F6E56; border-bottom-color: #1D9E75; font-weight: 600; background: #fff; }
+  .chat-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f5; background: #f7f7f9; display: flex; align-items: center; gap: 10px; }
+  .topic-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .topic-sema { background: #EEEDFE; }
+  .topic-2bak { background: #E1F5EE; }
+  .topic-title { font-size: 14px; font-weight: 600; color: #1c1c1e; }
+  .topic-sub { font-size: 11px; color: #888; margin-top: 1px; }
+  .messages { flex: 1; overflow-y: auto; padding: 14px 14px 6px; display: flex; flex-direction: column; gap: 10px; background: #f7f7f9; }
+  .msg { display: flex; flex-direction: column; }
+  .msg.a { align-items: flex-start; }
+  .msg.b { align-items: flex-end; }
+  .sender { font-size: 11px; color: #aaa; margin-bottom: 3px; padding: 0 3px; }
+  .bubble { max-width: 78%; padding: 9px 13px; font-size: 14px; line-height: 1.5; word-break: keep-all; }
+  .a .bubble { background: #fff; border-radius: 14px 14px 14px 4px; color: #1c1c1e; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+  .b .bubble { border-radius: 14px 14px 4px 14px; color: #fff; }
+  .bubble-sema { background: #7F77DD; }
+  .bubble-2bak { background: #1D9E75; }
+  .msg-time { font-size: 10px; color: #bbb; margin-top: 2px; padding: 0 3px; }
+  .input-area { padding: 10px 14px 14px; border-top: 1px solid #e5e5ea; background: #fff; }
+  .sender-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+  .stog { flex: 1; padding: 7px 8px; border-radius: 10px; border: 1px solid #e5e5ea; font-size: 12px; cursor: pointer; background: #f7f7f9; color: #888; text-align: center; transition: all 0.15s; }
+  .stog.sel-sema { background: #EEEDFE; border-color: #AFA9EC; color: #3C3489; font-weight: 600; }
+  .stog.sel-2bak { background: #E1F5EE; border-color: #5DCAA5; color: #085041; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .chip { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #f0f0f5; border: 1px solid #e5e5ea; cursor: pointer; color: #555; transition: all 0.1s; }
+  .chip:hover { background: #EEEDFE; border-color: #AFA9EC; color: #534AB7; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input { flex: 1; border: 1px solid #e5e5ea; border-radius: 20px; padding: 9px 14px; font-size: 14px; background: #f7f7f9; color: #1c1c1e; outline: none; font-family: inherit; min-width: 0; }
+  .input-row input:focus { border-color: #7F77DD; background: #fff; }
+  .send-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s; }
+  .send-btn:hover { opacity: 0.85; }
+  .send-sema { background: #7F77DD; }
+  .send-2bak { background: #1D9E75; }
+  .send-btn svg { width: 14px; height: 14px; fill: #fff; }
+  .empty-state { text-align: center; color: #bbb; font-size: 13px; margin: auto; padding: 20px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tab-bar">
+    <div class="tab active-sema" id="tab-sema" onclick="switchTab('sema')">🥁 세마치 장단</div>
+    <div class="tab" id="tab-2bak" onclick="switchTab('2bak')">🎵 4분의 2박자</div>
+  </div>
+
+  <div class="chat-header">
+    <div class="topic-icon topic-sema" id="hdr-icon">🥁</div>
+    <div>
+      <div class="topic-title" id="hdr-title">세마치 장단 느낌 나눠보기</div>
+      <div class="topic-sub" id="hdr-sub">세마치 장단을 쳤을 때 어떤 느낌이 들었어?</div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="empty-state" id="empty">아직 대화가 없어요.<br>느낌을 먼저 써봐! 👇</div>
+  </div>
+
+  <div class="input-area">
+    <div class="sender-toggle">
+      <div class="stog sel-sema" id="tog-a" onclick="selectSender('a')">나 (학생 A)</div>
+      <div class="stog" id="tog-b" onclick="selectSender('b')">짝꿍 (학생 B)</div>
+    </div>
+    <div class="chips" id="chip-area"></div>
+    <div class="input-row">
+      <input id="user-input" type="text" placeholder="느낌을 써봐!" onkeydown="if(event.key==='Enter') sendMsg()" />
+      <button class="send-btn send-sema" id="send-btn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TABS = {
+  sema: {
+    icon: '🥁', iconClass: 'topic-sema',
+    title: '세마치 장단 느낌 나눠보기',
+    sub: '세마치 장단을 쳤을 때 어떤 느낌이 들었어?',
+    tabClass: 'active-sema',
+    bubbleClass: 'bubble-sema',
+    sendClass: 'send-sema',
+    chips: ['그네 타는 느낌이었어', '덩실덩실 춤추고 싶었어', '출렁출렁한 느낌', '흥겨운 느낌', '어깨가 들썩였어', '굽이치는 느낌', '느긋한 느낌', '기우뚱한 느낌']
+  },
+  '2bak': {
+    icon: '🎵', iconClass: 'topic-2bak',
+    title: '4분의 2박자 느낌 나눠보기',
+    sub: '4분의 2박자를 쳤을 때 어떤 느낌이 들었어?',
+    tabClass: 'active-2bak',
+    bubbleClass: 'bubble-2bak',
+    sendClass: 'send-2bak',
+    chips: ['딱 떨어지는 느낌', '씩씩하게 걷는 것 같았어', '경쾌한 느낌', '규칙적인 느낌', '직선적인 느낌', '통통 튀는 느낌', '군더더기 없는 느낌', '시계 같은 느낌']
+  }
+};
+
+let curTab = 'sema';
+let curSender = 'a';
+const histories = { sema: [], '2bak': [] };
+
+function now() {
+  const d = new Date();
+  return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function switchTab(tab) {
+  curTab = tab;
+  ['sema','2bak'].forEach(t => {
+    document.getElementById('tab-' + t).className = 'tab';
+  });
+  document.getElementById('tab-' + tab).className = 'tab ' + TABS[tab].tabClass;
+  const T = TABS[tab];
+  document.getElementById('hdr-icon').textContent = T.icon;
+  document.getElementById('hdr-icon').className = 'topic-icon ' + T.iconClass;
+  document.getElementById('hdr-title').textContent = T.title;
+  document.getElementById('hdr-sub').textContent = T.sub;
+  document.getElementById('send-btn').className = 'send-btn ' + T.sendClass;
+  selectSender(curSender);
+  renderChips();
+  renderMessages();
+}
+
+function selectSender(s) {
+  curSender = s;
+  const tab = curTab;
+  document.getElementById('tog-a').className = 'stog' + (s === 'a' ? (' sel-' + tab) : '');
+  document.getElementById('tog-b').className = 'stog' + (s === 'b' ? (' sel-' + tab) : '');
+  document.getElementById('user-input').placeholder = s === 'a' ? '나의 느낌을 써봐!' : '짝꿍의 느낌을 써봐!';
+  document.getElementById('user-input').focus();
+}
+
+function renderChips() {
+  const area = document.getElementById('chip-area');
+  area.innerHTML = TABS[curTab].chips.map(c =>
+    `<span class="chip" onclick="fillInput('${c}')">${c}</span>`
+  ).join('');
+}
+
+function fillInput(text) {
+  document.getElementById('user-input').value = text;
+  document.getElementById('user-input').focus();
+}
+
+function renderMessages() {
+  const container = document.getElementById('messages');
+  const msgs = histories[curTab];
+  container.innerHTML = '';
+  if (msgs.length === 0) {
+    container.innerHTML = '<div class="empty-state">아직 대화가 없어요.<br>느낌을 먼저 써봐! 👇</div>';
+    return;
+  }
+  msgs.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + m.side;
+    const sender = document.createElement('div');
+    sender.className = 'sender';
+    sender.textContent = m.side === 'a' ? '학생 A' : '학생 B';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble' + (m.side === 'b' ? (' ' + TABS[curTab].bubbleClass) : '');
+    bubble.textContent = m.text;
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = m.time;
+    div.appendChild(sender);
+    div.appendChild(bubble);
+    div.appendChild(time);
+    container.appendChild(div);
+  });
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendMsg() {
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  histories[curTab].push({ side: curSender, text, time: now() });
+  renderMessages();
+}
+
+renderChips();
+</script>
+</body>
+</html>
